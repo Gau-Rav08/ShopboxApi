@@ -1,5 +1,6 @@
 ﻿using MongoDB.Driver;
 using ShopboxApi.Models;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ShopboxApi.Repositories
@@ -28,24 +29,41 @@ namespace ShopboxApi.Repositories
             return result;
         }
 
-        public async Task<User> GetUserByEmail(string email)
+        public async Task<User> GetUserWhenLogin(string email, string pass)
         {
-            var filter = Builders<User>.Filter.Eq(e => e.Email, email);
-            var result = await userCollection.Find(filter).FirstOrDefaultAsync();
+            var emailFilter = Builders<User>.Filter.Eq(e => e.Email, email);
+            var passFilter = Builders<User>.Filter.Eq(e => e.Password, pass);
+            var combineFilters = Builders<User>.Filter.And(emailFilter, passFilter);
+            var result = await userCollection.Find(combineFilters).FirstOrDefaultAsync();
             return result;
         }
-        public async Task CreateUser(User user)
+        public async Task<bool> CreateUser(User user)
         {
-            await userCollection.InsertOneAsync(new User
+            var filter = Builders<User>.Filter.Eq(e => e.Email, user.Email);
+            var result = await userCollection.Find(filter).FirstOrDefaultAsync();
+            if (result != null)
             {
-                Name = user.Name,
-                Email = user.Email,
-                Password = user.Password,
-                Phone = "",
-                Address = ""
-            });
+                return false;
+            } 
+            else
+            {
+                List<CartItem> cart = new();
+                List<Wish> wish = new();
+                await userCollection.InsertOneAsync(new User
+                {
+                    Name = user.Name,
+                    Email = user.Email,
+                    Password = user.Password,
+                    Phone = "",
+                    Address = "",
+                    Cart = cart ,
+                    Wishlist = wish
+                });
+                return true;
+            }
+            
         }
-        public async Task UpdateUser(User user)
+        public async Task<User> UpdateUser(User user)
         {
             var filter = Builders<User>.Filter.Eq(e => e.Id, user.Id);
             var update = Builders<User>.Update
@@ -54,12 +72,18 @@ namespace ShopboxApi.Repositories
                 .Set(x => x.Password, user.Password)
                 .Set(x => x.Phone, user.Phone)
                 .Set(x => x.Address, user.Address);
-            var result1 = await userCollection.UpdateOneAsync(filter, update);
+            await userCollection.UpdateOneAsync(filter, update);
+            var result = await GetUserById(user.Id);
+            return result;
         }
-       /* public async Task DeleteEmployee(string id)
+
+        public async Task FindAndUpdateCart(User user)
         {
-            var filter = Builders<Employee>.Filter.Eq(e => e.Id, id);
-            await userCollection.DeleteOneAsync(filter);
-        }*/
+            var filter = Builders<User>.Filter.Eq(e => e.Id, user.Id);
+            var update = Builders<User>.Update
+                .Set(x => x.Cart, user.Cart);
+            await userCollection.UpdateOneAsync(filter, update);
+        }
+        
     }
 }

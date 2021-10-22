@@ -33,6 +33,13 @@ namespace ShopboxApi.Repositories
             return result;
         }
 
+        public async Task<IEnumerable<Product>> GetProductFromBrand(string brand)
+        {
+            var filter = Builders<Product>.Filter.Eq(e => e.Brand, brand);
+            var result = await productCollection.Find(filter).ToListAsync();
+            return result;
+        }
+
         /*public async Task<Product> GetUserByEmail(string email)
         {
             var filter = Builders<Product>.Filter.Eq(e => e.Email, email);
@@ -50,16 +57,16 @@ namespace ShopboxApi.Repositories
                 Address = ""
             });
         }*/
-       /* public async Task UpdateUser(Product user)
-        {
-            var filter = Builders<Product>.Filter.Eq(e => e.Id, user.Id);
-            var update = Builders<Product>.Update
-                .Set(x => x.Name, user.Name)
-                .Set(x => x.Email, user.Email)
-                .Set(x => x.Password, user.Password)
-                .Set(x => x.Phone, user.Phone)
-                .Set(x => x.Address, user.Address);
-            var result1 = await userCollection.UpdateOneAsync(filter, update);
-        }*/
+        /* public async Task UpdateUser(Product user)
+         {
+             var filter = Builders<Product>.Filter.Eq(e => e.Id, user.Id);
+             var update = Builders<Product>.Update
+                 .Set(x => x.Name, user.Name)
+                 .Set(x => x.Email, user.Email)
+                 .Set(x => x.Password, user.Password)
+                 .Set(x => x.Phone, user.Phone)
+                 .Set(x => x.Address, user.Address);
+             var result1 = await userCollection.UpdateOneAsync(filter, update);
+         }*/
     }
 }

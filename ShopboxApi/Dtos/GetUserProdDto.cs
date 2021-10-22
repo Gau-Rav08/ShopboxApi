@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 
 namespace ShopboxApi.Dtos
 {
-    public class GetProdById
+    public class GetUserProdDto
     {
-        public string Id { get; set; }
+        public string UserId { get; set; }
+
+        public string ProdId { get; set; }
     }
 }
